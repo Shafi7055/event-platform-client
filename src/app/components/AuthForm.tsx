@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { signIn, signUp } from '@/lib/auth-client';
 import { useRouter } from 'next/navigation';
@@ -9,6 +11,7 @@ interface AuthFormProps {
 
 export const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
   const router = useRouter();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,11 +21,19 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
     setLoading(true);
     try {
       if (mode === 'login') {
-        await signIn('credentials', { email, password, redirect: false });
+        const { error } = await signIn.email({ email, password });
+        if (error) {
+          toast.error(error.message ?? 'Authentication failed');
+          return;
+        }
         toast.success('Logged in successfully');
         router.push('/');
       } else {
-        await signUp('credentials', { email, password, redirect: false });
+        const { error } = await signUp.email({ name, email, password });
+        if (error) {
+          toast.error(error.message ?? 'Authentication failed');
+          return;
+        }
         toast.success('Account created, you can now log in');
         router.push('/login');
       }
@@ -39,6 +50,16 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
       <h2 className="text-2xl font-bold text-center">
         {mode === 'login' ? 'Login to Your Account' : 'Create a New Account'}
       </h2>
+      {mode === 'register' && (
+        <input
+          type="text"
+          placeholder="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+          className="border px-3 py-2 rounded"
+        />
+      )}
       <input
         type="email"
         placeholder="Email"
@@ -65,3 +86,5 @@ export const AuthForm: React.FC<AuthFormProps> = ({ mode }) => {
     </form>
   );
 };
+
+export default AuthForm;
