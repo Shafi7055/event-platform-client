@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { signOut, useSession } from '@/lib/auth-client';
+import { clearAuthSession, useSession } from '@/lib/auth-client';
+import { betterAuthClient } from '@/lib/better-auth-client';
 import { toast } from 'react-hot-toast';
 import ThemeToggle from '@/app/components/ThemeToggle';
 
@@ -11,40 +12,39 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await signOut();
-      if (error) {
-        toast.error(error.message ?? 'Unable to log out');
-        return;
-      }
+      const result = await betterAuthClient.signOut();
+      if (result.error) throw new Error(result.error.message);
+      clearAuthSession();
       toast.success('Logged out successfully');
     } catch (error) {
-      console.error(error);
-      toast.error('Unable to log out');
+      toast.error(error instanceof Error ? error.message : 'Unable to log out');
     }
   };
 
   return (
-    <nav className="flex items-center justify-between p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-sm">
-      <Link href="/" className="flex items-center space-x-2">
-        <span className="text-xl font-bold text-gray-800 dark:text-white">Social Events Platform</span>
-      </Link>
-      <div className="flex items-center space-x-4">
-        <Link href="/upcoming-events" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Upcoming Events</Link>
-        <ThemeToggle />
-        {isPending ? (
-          <span className="text-sm text-gray-500">Loading...</span>
-        ) : user ? (
-          <div className="flex items-center gap-3">
-            <span className="hidden text-gray-800 dark:text-gray-200 md:inline">{user.name}</span>
-            <button type="button" onClick={handleSignOut} className="rounded px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800">
-              Logout
-            </button>
-          </div>
-        ) : (
-          <Link href="/login" className="rounded bg-indigo-600 px-3 py-2 text-white hover:bg-indigo-700">
-            Login
-          </Link>
-        )}
+    <nav className="site-nav">
+      <div className="site-nav-inner">
+        <Link href="/" className="site-brand">
+          <span className="brand-mark" aria-hidden="true">✳</span>
+          <span>good<span className="brand-accent">neighbor</span></span>
+        </Link>
+        <div className="site-nav-links">
+          <Link href="/upcoming-events" className="nav-link">Explore events</Link>
+          <Link href="/create-event" className="nav-link nav-link-create">Create an event <span aria-hidden="true">↗</span></Link>
+          <ThemeToggle />
+          {isPending ? (
+            <span className="nav-loading" aria-label="Loading account" />
+          ) : user ? (
+            <div className="nav-account">
+              <Link href="/joined-events" className="nav-link nav-dashboard-link">Joined</Link>
+              <Link href="/manage-events" className="nav-link nav-dashboard-link">Manage</Link>
+              <Link href="/profile" className="nav-user">{user.name}</Link>
+              <button type="button" onClick={handleSignOut} className="nav-login">Log out</button>
+            </div>
+          ) : (
+            <Link href="/login" className="nav-login">Log in</Link>
+          )}
+        </div>
       </div>
     </nav>
   );
