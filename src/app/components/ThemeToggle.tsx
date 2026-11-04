@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 export default function ThemeToggle() {
   useEffect(() => {
     const savedTheme = window.localStorage.getItem('theme');
-    const dark = savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const dark = savedTheme === 'dark';
     document.documentElement.classList.toggle('dark', dark);
   }, []);
 
@@ -19,10 +19,10 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      aria-label="Toggle theme"
-      className="rounded px-3 py-2 text-sm hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+      aria-label="Toggle color theme"
+      className="theme-toggle"
     >
-      Toggle theme
+      <span aria-hidden="true">◐</span>
     </button>
   );
 }

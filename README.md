@@ -7,12 +7,16 @@ Goodneighbor is a community service events client built with Next.js App Router.
 ## What you can do
 
 - Discover upcoming community events and filter by event type or location.
-- Explore event details and join events with your account.
+- Explore event details and preview the join flow.
 - Create community events with a future date, category, location, and photo URL.
 - Review, edit, and remove events from the organizer dashboard.
 - See and manage events joined from your account.
-- Update your profile and switch between light and dark themes.
+- Update a profile preview and switch between light and dark themes.
 - Browse a responsive gallery of community-service photography.
+
+## Client-only preview
+
+Event creation, joins, organizer edits, and profile edits are currently stored in the browser as a demonstration flow; they are not shared across users or devices. Authentication uses the configured API and Better Auth service.
 
 ## Getting started
 
@@ -27,7 +31,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL` to the origin of the Express API (default `http://localhost:8000`). Run the client on port `3000` and configure the backend CORS origin to `http://localhost:3000`.
 
-Email/password registration and login use the API and receive a signed JWT. The client sends it as a Bearer token on protected API requests and keeps it in session storage for the current browser tab. Events, joins, and profile edits are persisted by the API. The MongoDB URI and JWT signing secret are backend-only settings; never put them in `NEXT_PUBLIC_*` variables or this client repository.
+Email/password registration and login use the API and receive a signed JWT. The client sends it with protected API requests and keeps it in session storage for the current browser tab. The MongoDB URI and JWT signing secret are backend-only settings; never put them in `NEXT_PUBLIC_*` variables or this client repository.
 
 ## Google sign-in
 

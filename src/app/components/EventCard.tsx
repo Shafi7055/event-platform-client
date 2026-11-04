@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import type { Event } from '@/lib/events';
 
@@ -13,14 +14,16 @@ export const EventCard = ({ event }: EventCardProps) => {
   });
 
   return (
-    <Link href={`/events/${event.id}`} className="group block overflow-hidden rounded-xl bg-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-gray-800">
-      <div className="flex h-48 items-end bg-gradient-to-br from-indigo-500 to-purple-600 p-5 text-white">
-        <span className="text-2xl font-semibold">{event.title}</span>
+    <Link href={`/events/${event.id}`} className="event-card group">
+      <div className="event-card-image">
+        <Image src={event.thumbnail} alt="" fill unoptimized sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" />
+        <span className="event-type">{event.type}</span>
       </div>
-      <div className="p-4">
-        <h3 className="mb-2 text-lg font-medium text-gray-900 group-hover:underline dark:text-gray-100">{event.title}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-300">{event.location}</p>
-        <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">{event.type} · {formattedDate}</p>
+      <div className="event-card-content">
+        <div className="event-card-date">{formattedDate}</div>
+        <h3>{event.title}</h3>
+        <p>{event.location}</p>
+        <span className="event-card-link">View event <span aria-hidden="true">↗</span></span>
       </div>
     </Link>
   );
