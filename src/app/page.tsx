@@ -45,9 +45,7 @@ export default function HomePage() {
           </div>
           <div className="hero-social-proof">
             <div className="avatar-stack" aria-hidden="true">
-              <Image src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=80" alt="" width={36} height={36} />
-              <Image src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&h=96&q=80" alt="" width={36} height={36} />
-              <Image src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=96&h=96&q=80" alt="" width={36} height={36} />
+              <span>N</span><span>A</span><span>J</span>
             </div>
             <p><strong>Good company, close by.</strong><br />Join your local community.</p>
           </div>
@@ -55,8 +53,8 @@ export default function HomePage() {
 
         <div className="hero-visual">
           <Image
-            src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=1400&q=85"
-            alt="Community volunteers working together outdoors"
+            src="https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1200&q=85"
+            alt="Volunteers packing boxes of food for community distribution"
             fill
             priority
             sizes="(max-width: 800px) 100vw, 52vw"
@@ -86,7 +84,7 @@ export default function HomePage() {
       <section className="community-section">
         <div className="community-image">
           <Image
-            src="https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=1200&q=85"
+            src="https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?auto=format&fit=crop&w=1200&q=85"
             alt="Volunteers sharing a moment after helping their community"
             fill
             sizes="(max-width: 800px) 100vw, 50vw"
@@ -127,15 +125,15 @@ export default function HomePage() {
         </div>
         <div className="gallery-grid">
           <figure className="gallery-photo gallery-photo-tall">
-            <Image src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?auto=format&fit=crop&w=1000&q=85" alt="Volunteers working together on a local project" fill sizes="(max-width: 700px) 100vw, 42vw" />
+            <Image src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1000&q=85" alt="Neighbors sharing a moment at a community gathering" fill sizes="(max-width: 700px) 100vw, 42vw" />
             <figcaption>Hands in, hearts open.</figcaption>
           </figure>
           <figure className="gallery-photo">
-            <Image src="https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=800&q=85" alt="Neighbors packing food donations together" fill sizes="(max-width: 700px) 100vw, 28vw" />
+            <Image src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?auto=format&fit=crop&w=800&q=85" alt="Community donations ready to be shared" fill sizes="(max-width: 700px) 100vw, 28vw" />
             <figcaption>Good things, shared.</figcaption>
           </figure>
           <figure className="gallery-photo">
-            <Image src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&q=85" alt="A community planting a neighborhood garden" fill sizes="(max-width: 700px) 100vw, 28vw" />
+            <Image src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=800&q=85" alt="A flourishing garden tended with care" fill sizes="(max-width: 700px) 100vw, 28vw" />
             <figcaption>Room to grow.</figcaption>
           </figure>
         </div>

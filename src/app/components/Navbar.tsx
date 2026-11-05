@@ -5,20 +5,52 @@ import { clearAuthSession, useSession } from '@/lib/auth-client';
 import { betterAuthClient } from '@/lib/better-auth-client';
 import { toast } from 'react-hot-toast';
 import ThemeToggle from '@/app/components/ThemeToggle';
+import UserAvatar from '@/app/components/UserAvatar';
+import { useState } from 'react';
 
 export default function Navbar() {
   const { data: session, isPending } = useSession();
   const user = session?.user;
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
+    if (isSigningOut) return;
+    setIsSigningOut(true);
+
+    let localLogoutSucceeded = true;
+    try {
+      clearAuthSession();
+    } catch (error) {
+      console.error('Unable to clear the local sign-in session', error);
+      localLogoutSucceeded = false;
+    }
+
+    let serverLogoutSucceeded = true;
     try {
       const result = await betterAuthClient.signOut();
       if (result.error) throw new Error(result.error.message);
-      clearAuthSession();
-      toast.success('Logged out successfully');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to log out');
+      console.error('Unable to revoke the Better Auth session', error);
+      serverLogoutSucceeded = false;
     }
+
+    if (!localLogoutSucceeded) {
+      try {
+        clearAuthSession();
+        localLogoutSucceeded = true;
+      } catch (error) {
+        console.error('Unable to clear the local sign-in session', error);
+      }
+    }
+
+    if (!localLogoutSucceeded) {
+      toast.error('Unable to clear your local sign-in session. Please try again.');
+    } else if (!serverLogoutSucceeded) {
+      toast.error('Signed out on this tab, but the server session could not be revoked. Please try again.');
+    } else {
+      toast.success('Logged out successfully');
+    }
+    setIsSigningOut(false);
   };
 
   return (
@@ -38,8 +70,13 @@ export default function Navbar() {
             <div className="nav-account">
               <Link href="/joined-events" className="nav-link nav-dashboard-link">Joined</Link>
               <Link href="/manage-events" className="nav-link nav-dashboard-link">Manage</Link>
-              <Link href="/profile" className="nav-user">{user.name}</Link>
-              <button type="button" onClick={handleSignOut} className="nav-login">Log out</button>
+              <Link href="/profile" className="nav-user">
+                <UserAvatar image={user.image} name={user.name} className="nav-user-avatar" />
+                <span>{user.name}</span>
+              </Link>
+              <button type="button" onClick={handleSignOut} disabled={isSigningOut} className="nav-login">
+                {isSigningOut ? 'Logging out…' : 'Log out'}
+              </button>
             </div>
           ) : (
             <Link href="/login" className="nav-login">Log in</Link>

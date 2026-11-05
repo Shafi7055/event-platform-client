@@ -1,4 +1,3 @@
-import { API_URL } from '@/lib/api-client';
 import type { AuthSession } from '@/lib/auth-client';
 
 function isAuthSession(value: unknown): value is AuthSession {
@@ -15,7 +14,7 @@ function isAuthSession(value: unknown): value is AuthSession {
 }
 
 export async function exchangeAuthSession(): Promise<AuthSession> {
-  const response = await fetch(`${API_URL}/api/auth/token`, {
+  const response = await fetch('/api/auth/token', {
     method: 'POST',
     credentials: 'include',
     cache: 'no-store',

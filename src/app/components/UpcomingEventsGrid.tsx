@@ -1,17 +1,33 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EventCard } from "@/app/components/EventCard";
-import { mockEvents } from "@/lib/events";
-import { useDemoData } from "@/lib/demo-store";
+import type { Event } from "@/lib/events";
 import { useToday } from "@/lib/date";
+import { apiRequest } from "@/lib/api-client";
 
 export default function UpcomingEventsGrid() {
-  const { createdEvents } = useDemoData();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [query, setQuery] = useState("");
   const [type, setType] = useState("All events");
-  const events = useMemo(() => [...createdEvents, ...mockEvents], [createdEvents]);
   const today = useToday();
+
+  useEffect(() => {
+    let active = true;
+    apiRequest<{ events: Event[] }>("/api/events")
+      .then(({ events: upcoming }) => {
+        if (active) setEvents(upcoming);
+      })
+      .catch((error: unknown) => {
+        if (active) setLoadError(error instanceof Error ? error.message : "Unable to load events.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   const eventTypes = useMemo(
     () => ["All events", ...new Set(events.map((event) => event.type))],
@@ -57,13 +73,25 @@ export default function UpcomingEventsGrid() {
           </select>
         </label>
       </div>
-      {visibleEvents.length > 0 ? (
+      {loading && (
+        <div className="empty-state" aria-live="polite">
+          <span className="loading-spinner" />
+          <p>Finding upcoming events…</p>
+        </div>
+      )}
+      {!loading && loadError && (
+        <div className="empty-state" role="alert">
+          <h2>Events are unavailable right now.</h2>
+          <p>{loadError}</p>
+        </div>
+      )}
+      {!loading && !loadError && visibleEvents.length > 0 ? (
         <div className="event-grid">
           {visibleEvents.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
         </div>
-      ) : (
+      ) : !loading && !loadError ? (
         <div className="empty-state">
           <span aria-hidden="true">✳</span>
           <h2>No events found just yet.</h2>
@@ -72,7 +100,7 @@ export default function UpcomingEventsGrid() {
             good.
           </p>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

@@ -1,43 +1,60 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import EventEditor, { type EventFormValues } from '@/app/components/EventEditor';
 import RequireSession from '@/app/components/RequireSession';
-import { useSession } from '@/lib/auth-client';
-import { deleteCreatedEvent, updateCreatedEvent, useDemoData, type CreatedEvent } from '@/lib/demo-store';
+import { apiRequest } from '@/lib/api-client';
+import type { Event } from '@/lib/events';
 
 function ManageEventsContent() {
-  const { data: session } = useSession();
-  const { createdEvents } = useDemoData();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const email = session?.user.email ?? '';
 
-  const events = createdEvents.filter((event) => event.createdBy.toLowerCase() === email.toLowerCase());
+  useEffect(() => {
+    let active = true;
+    apiRequest<{ events: Event[] }>('/api/users/me/events')
+      .then(({ events: ownedEvents }) => {
+        if (active) setEvents(ownedEvents);
+      })
+      .catch((error: unknown) => {
+        if (active) setLoadError(error instanceof Error ? error.message : 'Unable to load your events.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   const sortedEvents = useMemo(() => [...events].sort((a, b) => a.date.localeCompare(b.date)), [events]);
 
-  const handleUpdate = async (values: EventFormValues, event: CreatedEvent) => {
+  const handleUpdate = async (values: EventFormValues, event: Event) => {
     try {
-      const updatedEvent = { ...event, ...values };
-      updateCreatedEvent(updatedEvent);
+      const { event: updatedEvent } = await apiRequest<{ event: Event }>(`/api/events/${event.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(values),
+      });
+      setEvents((current) => current.map((item) => item.id === event.id ? updatedEvent : item));
       setEditingId(null);
-      toast.success('Event updated in this browser preview. Connect your API to share the change.');
+      toast.success('Event updated.');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to update the event preview.');
+      toast.error(error instanceof Error ? error.message : 'Unable to update the event.');
     }
   };
 
-  const handleDelete = (event: CreatedEvent) => {
+  const handleDelete = async (event: Event) => {
     try {
-      deleteCreatedEvent(event.id);
+      await apiRequest<{ message: string }>(`/api/events/${event.id}`, { method: 'DELETE' });
+      setEvents((current) => current.filter((item) => item.id !== event.id));
       setDeleteId(null);
-      toast.success('Event removed from this browser preview.');
+      toast.success('Event removed.');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to remove the event preview.');
+      toast.error(error instanceof Error ? error.message : 'Unable to remove the event.');
     }
   };
 
@@ -51,8 +68,11 @@ function ManageEventsContent() {
         </div>
         <Link href="/create-event" className="button button-primary">Create an event <span aria-hidden="true">↗</span></Link>
       </div>
-      <p className="demo-notice">Preview mode: your event changes are saved in this browser only until the separate server API is connected.</p>
-      {sortedEvents.length ? (
+      {loading ? (
+        <div className="empty-state" aria-live="polite"><span className="loading-spinner" /><p>Loading your events…</p></div>
+      ) : loadError ? (
+        <div className="empty-state" role="alert"><h2>Could not load your events.</h2><p>{loadError}</p></div>
+      ) : sortedEvents.length ? (
         <div className="manage-list">
           {sortedEvents.map((event) => (
             <article className="manage-card" key={event.id}>
@@ -80,7 +100,7 @@ function ManageEventsContent() {
               )}
               {deleteId === event.id && (
                 <div className="delete-confirmation" role="group" aria-label={`Confirm deleting ${event.title}`}>
-                  <p><strong>Remove this event?</strong><span>This only removes the local browser preview.</span></p>
+                  <p><strong>Remove this event?</strong><span>This also removes its join records.</span></p>
                   <button type="button" className="button button-secondary" onClick={() => setDeleteId(null)}>Keep event</button>
                   <button type="button" className="button button-danger" onClick={() => handleDelete(event)}>Remove event</button>
                 </div>

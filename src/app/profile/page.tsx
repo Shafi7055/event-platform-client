@@ -1,41 +1,37 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import RequireSession from '@/app/components/RequireSession';
-import { useSession } from '@/lib/auth-client';
-import { getDemoProfile, saveDemoProfile } from '@/lib/demo-store';
+import UserAvatar from '@/app/components/UserAvatar';
+import { setAuthSession, useSession, type AuthUser } from '@/lib/auth-client';
+import { apiRequest } from '@/lib/api-client';
 
 function ProfileEditor() {
   const { data: session } = useSession();
   const email = session?.user.email ?? '';
-  const [profile] = useState(() => getDemoProfile(email, session?.user.name ?? ''));
-  const [name, setName] = useState(profile.name);
-  const [image, setImage] = useState(profile.image);
+  const [name, setName] = useState(session?.user.name ?? '');
+  const [image, setImage] = useState(session?.user.image ?? '');
   const [saving, setSaving] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSaving(true);
     try {
-      saveDemoProfile(email, { name: name.trim(), image: image.trim() });
-      toast.success('Profile preview saved in this browser. Connect your API to update your account.');
+      const { user } = await apiRequest<{ user: AuthUser }>('/api/profile', {
+        method: 'PATCH',
+        body: JSON.stringify({ name: name.trim(), image: image.trim() }),
+      });
+      if (session) setAuthSession({ ...session, user });
+      setName(user.name);
+      setImage(user.image || '');
+      toast.success('Profile updated.');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to save the profile preview.');
+      toast.error(error instanceof Error ? error.message : 'Unable to update your profile.');
     } finally {
       setSaving(false);
     }
   };
-
-  const previewImage = (() => {
-    try {
-      const url = new URL(image);
-      return url.protocol === 'https:' && url.hostname === 'images.unsplash.com' ? image : null;
-    } catch {
-      return null;
-    }
-  })();
 
   return (
     <main className="profile-page section-wrap">
@@ -45,11 +41,7 @@ function ProfileEditor() {
         <p>Let your neighbors know who&apos;s showing up for the community.</p>
       </div>
       <form className="profile-card profile-editor" onSubmit={handleSubmit}>
-        <div className="profile-avatar">
-          {previewImage
-            ? <Image src={previewImage} alt="Profile photo preview" width={88} height={88} unoptimized />
-            : name.trim().charAt(0).toUpperCase() || 'N'}
-        </div>
+        <UserAvatar image={image} name={name} className="profile-avatar" />
         <p className="profile-email">{email}</p>
         <label className="form-field">
           Display name
@@ -58,9 +50,8 @@ function ProfileEditor() {
         <label className="form-field">
           Profile photo URL
           <input className="form-input" type="url" value={image} onChange={(event) => setImage(event.target.value)} placeholder="https://images.unsplash.com/..." />
-          <span className="form-help">For this preview, paste an Unsplash photo URL.</span>
+          <span className="form-help">Use a public image URL that begins with http:// or https://.</span>
         </label>
-        <p className="demo-notice">Profile edits are saved in this browser preview only.</p>
         <button type="submit" className="button button-primary form-submit" disabled={saving}>{saving ? 'Saving…' : 'Save profile'} <span aria-hidden="true">↗</span></button>
       </form>
     </main>

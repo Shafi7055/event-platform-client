@@ -41,7 +41,7 @@ export default function EventEditor({
           type: initialEvent.type,
           thumbnail: initialEvent.thumbnail,
           location: initialEvent.location,
-          date: initialEvent.date,
+          date: initialEvent.date.slice(0, 10),
         }
       : { type: "Cleanup" },
   });

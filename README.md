@@ -2,7 +2,7 @@
 
 Goodneighbor is a community service events client built with Next.js App Router. It helps neighbors discover local volunteer opportunities and provides a clear interface for organizers and participants.
 
-**Live site:** Not deployed yet — add the Vercel or Render URL here after deployment.
+**Live site:** https://event-platform-client-nu.vercel.app
 
 ## What you can do
 
@@ -33,9 +33,13 @@ Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL` to the origin 
 
 Email/password registration and login use the API and receive a signed JWT. The client sends it with protected API requests and keeps it in session storage for the current browser tab. The MongoDB URI and JWT signing secret are backend-only settings; never put them in `NEXT_PUBLIC_*` variables or this client repository.
 
+## Deploy to Vercel
+
+Deploy this Next.js client as its own Vercel project, with `event-platform-client` as the project root directory. Set `NEXT_PUBLIC_API_URL` to the HTTPS origin of the separately deployed API (without a trailing slash), then deploy or redeploy the client. The client proxies `/api/*` to that API, so endpoints such as `/api/events` are also available on the client origin. Configure the API project's `CORS_ORIGIN` with the exact deployed client origin. See the [API deployment instructions](https://github.com/Shafi7055/event-platform-server#deploy-to-vercel) for its Vercel project and required server-side environment variables.
+
 ## Google sign-in
 
-The server uses Better Auth with Google OAuth and MongoDB. Configure `BETTER_AUTH_SECRET` with a random value of at least 32 characters, set `BETTER_AUTH_URL` to the server origin, and keep `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` on the server only. Set the Google OAuth authorized redirect URI to `<BETTER_AUTH_URL>/api/auth/callback/google` (for local development: `http://localhost:8000/api/auth/callback/google`). Set `CLIENT_ORIGIN` to the client origin so credentialed auth requests are accepted.
+The server uses Better Auth with Google OAuth and MongoDB. Configure `BETTER_AUTH_SECRET` with a random value of at least 32 characters, set `BETTER_AUTH_URL` to the client origin, and keep `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` on the server only. Auth requests are proxied through the client origin so the browser can retain the OAuth state cookie. Set the Google OAuth authorized redirect URI to `<BETTER_AUTH_URL>/api/auth/callback/google` (locally: `http://localhost:3000/api/auth/callback/google`). Set `CORS_ORIGIN` to the client origin.
 
 The client uses `NEXT_PUBLIC_API_URL` to reach the server. After Google verifies the user, the server exchanges the Better Auth session for the JWT format used by the existing protected API routes.
 

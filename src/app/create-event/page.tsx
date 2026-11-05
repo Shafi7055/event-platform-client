@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import EventEditor, { type EventFormValues } from '@/app/components/EventEditor';
 import RequireSession from '@/app/components/RequireSession';
 import { useSession } from '@/lib/auth-client';
-import { saveCreatedEvent } from '@/lib/demo-store';
+import { apiRequest } from '@/lib/api-client';
 
 function CreateEventForm() {
   const router = useRouter();
@@ -18,16 +18,14 @@ function CreateEventForm() {
     }
 
     try {
-      saveCreatedEvent({
-        ...values,
-        id: `local-${Date.now()}`,
-        createdBy: session.user.email,
-        createdAt: new Date().toISOString(),
+      await apiRequest<{ event: unknown }>('/api/events', {
+        method: 'POST',
+        body: JSON.stringify(values),
       });
-      toast.success('Event added to this browser preview. Connect your API to share it with everyone.');
+      toast.success('Your event is live.');
       router.push('/upcoming-events');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Unable to save the event preview.');
+      toast.error(error instanceof Error ? error.message : 'Unable to create the event.');
     }
   };
 

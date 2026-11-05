@@ -26,7 +26,11 @@ export async function apiRequest<T>(
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}${path}`, { ...options, headers });
+    response = await fetch(path, {
+      ...options,
+      headers,
+      cache: options.cache ?? 'no-store',
+    });
   } catch (error) {
     console.error(`API request failed for ${path}`, error);
     throw new ApiError(0, 'Unable to reach the server. Check your connection and try again.');

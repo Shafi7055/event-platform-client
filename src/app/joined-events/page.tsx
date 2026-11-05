@@ -1,33 +1,42 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import RequireSession from '@/app/components/RequireSession';
-import { useSession } from '@/lib/auth-client';
-import { leaveEvent, useDemoData } from '@/lib/demo-store';
-import { mockEvents, type Event } from '@/lib/events';
+import { apiRequest } from '@/lib/api-client';
+import type { Event } from '@/lib/events';
 
 function JoinedEventsContent() {
-  const { data: session } = useSession();
-  const { createdEvents, joins } = useDemoData();
-  const email = session?.user.email ?? '';
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
-  const allEvents: Event[] = [...createdEvents, ...mockEvents];
-  const joinedIds = new Set(joins
-    .filter((entry) => entry.email.toLowerCase() === email.toLowerCase())
-    .map((entry) => entry.eventId));
-  const events = allEvents.filter((event) => joinedIds.has(event.id));
+  useEffect(() => {
+    let active = true;
+    apiRequest<{ events: Event[] }>('/api/users/me/joins')
+      .then(({ events: joinedEvents }) => {
+        if (active) setEvents(joinedEvents);
+      })
+      .catch((error: unknown) => {
+        if (active) setLoadError(error instanceof Error ? error.message : 'Unable to load joined events.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   const sortedEvents = useMemo(
     () => [...events].sort((a, b) => a.date.localeCompare(b.date)),
     [events],
   );
 
-  const handleLeave = (event: Event) => {
+  const handleLeave = async (event: Event) => {
     try {
-      leaveEvent(event.id, email);
+      await apiRequest<{ joined: boolean }>(`/api/events/${event.id}/join`, { method: 'DELETE' });
+      setEvents((current) => current.filter((item) => item.id !== event.id));
       toast.success('Event removed from your joined list.');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Unable to update your joined list.');
@@ -44,8 +53,11 @@ function JoinedEventsContent() {
         </div>
         <Link href="/upcoming-events" className="button button-primary">Find another event <span aria-hidden="true">↗</span></Link>
       </div>
-      <p className="demo-notice">Preview mode: joined events are saved in this browser only until the separate server API is connected.</p>
-      {sortedEvents.length ? (
+      {loading ? (
+        <div className="empty-state" aria-live="polite"><span className="loading-spinner" /><p>Loading your joined events…</p></div>
+      ) : loadError ? (
+        <div className="empty-state" role="alert"><h2>Could not load joined events.</h2><p>{loadError}</p></div>
+      ) : sortedEvents.length ? (
         <div className="joined-list">
           {sortedEvents.map((event) => (
             <article className="joined-card" key={event.id}>
