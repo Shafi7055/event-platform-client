@@ -1,73 +1,103 @@
 # Goodneighbor — Social Development Events Platform
 
-Goodneighbor is a community-service events platform that helps neighbors find local ways to volunteer, organize events, and keep track of the causes they care about. This repository contains the **Next.js client**; the API server is maintained separately.
+Goodneighbor is a responsive community-service platform for discovering and managing local social development events such as clothing drives, blanket distributions, food support outreach, and neighborhood volunteer gatherings. The client app helps residents find upcoming opportunities, create their own events, join community initiatives, and keep track of their involvement.
 
-**Live site:** [event-platform-client-nu.vercel.app](https://event-platform-client-nu.vercel.app)
+Live site: https://event-platform-client-nu.vercel.app
+
+## Highlights
+
+- Discover upcoming community-service events with event images, locations, dates, and categories.
+- Browse a public home page featuring a community-focused hero banner, gallery, feature callouts, and recent events.
+- Create new events with a title, description, event type, thumbnail image URL, address/location, and future date.
+- Join events as a logged-in user and keep a personalized list of events you have joined.
+- Manage your own created events with update and delete actions through the authenticated API.
+- Update your profile name and image, and switch between light and dark themes across the app.
+- Use a mobile-friendly, responsive layout built with Next.js and the existing API/auth patterns.
+- Review upcoming events filtered to the future only, with consistent card layouts and clear action buttons.
 
 ## Features
 
-- Discover future community events and search by title, location, or description; filter by event type.
-- View event details and join or leave events using your account.
-- Create events with a description, category, photo, location, and future date.
-- Manage events you created, including editing and deleting them.
-- Keep a date-sorted list of events you have joined.
-- Register or sign in with email and password, or continue with Google when the server's OAuth integration is configured.
-- Update your profile name and photo, and switch between light and dark themes.
-- Browse a community photo gallery and a newsletter sign-up section. Newsletter submission is currently a UI preview and does not subscribe an address to a mailing service.
-- Use the responsive interface on mobile, tablet, and desktop.
+- Public home page with hero section, feature highlights, six recent upcoming events, photo gallery, and newsletter preview section.
+- Email/password registration and login flows using the project’s existing Better Auth integration.
+- Private create-event page for authenticated users, including validation and date restrictions to prevent past-date submissions.
+- Public upcoming events page showing only future events with consistent card sizing and event details.
+- Public event details page with join functionality guarded by authenticated API access.
+- Private joined-events page that lists events the current user has joined, sorted by date.
+- Private manage-events page that shows ownership-based controls for editing and deleting user-created events.
+- User-controlled light/dark theme toggle for consistent application-wide styling.
+- Useful validation and user feedback states for loading, success, and error messaging.
 
 ## Tech stack
 
-- Next.js App Router, React, and TypeScript
-- Better Auth for sign-in flows
-- `fetch`-based API client for event, profile, and account data
-- React Hook Form for event forms
+- Next.js App Router
+- React 19 and TypeScript
+- Tailwind CSS
+- Better Auth
+- React Hook Form
+- Axios for API requests
+- TanStack React Query for client-side data handling
 
 ## Getting started
 
-### Requirements
+### Prerequisites
 
-- Node.js and npm
-- The separate event-platform API server, for features that require server-backed data or authentication
+- Node.js 18+ or the version required by the project
+- npm
+- A running backend API service for authenticated flows and event data
 
-### Install and run
+### Install dependencies
 
 ```bash
 npm install
-cp .env.example .env.local
 ```
 
-Set `NEXT_PUBLIC_API_URL` in `.env.local` to the origin of your API server. The default is `http://localhost:8000`.
+### Environment variables
+
+Create a `.env.local` file and configure the app to point to your API server:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+### Run locally
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The Next.js development server proxies `/api/*` requests to `NEXT_PUBLIC_API_URL`.
+Then open http://localhost:3000 in your browser.
 
 ## Available scripts
 
 ```bash
-npm run dev    # Start the development server
-npm run lint   # Run ESLint
-npm run build  # Build the production application
-npm run start  # Start the production server (after building)
+npm run dev
+npm run build
+npm run start
+npm run lint
 ```
 
-## API and authentication
+## Project purpose
 
-The client expects the separate server to provide the event and account API used by the app. This includes event browsing and details, event creation and management, event joins, current-user event lists, and profile updates. Protected requests use the signed-in user's bearer token. The client keeps its authentication session in browser `sessionStorage` for the current tab; event and profile data are handled by the API rather than shared through this client repository.
+This repository contains the client-side application only. The server-side API and authentication services live in a separate codebase. The frontend follows that API contract and does not assume or invent backend behavior.
 
-Email/password sign-in and Google sign-in both depend on the server's authentication configuration. To use Google sign-in, configure the OAuth provider and callback settings on the API/auth service as well as setting `NEXT_PUBLIC_API_URL` to the API origin. Refer to the server's documentation for its required environment variables and deployment setup.
+## Notes on auth and security
 
-## Deploying
+- Protected routes and actions rely on the server's authenticated API contract.
+- Client-side checks are not a substitute for backend authorization.
+- Email verification and password recovery are intentionally not added unless the backend and product requirements explicitly require them.
 
-Deploy this repository as a separate Vercel project, using the repository root as the project root. Set `NEXT_PUBLIC_API_URL` to the deployed API server's HTTPS origin in the Vercel project environment, then deploy the client. The API/auth service must also be configured to accept the deployed client origin and its authentication callbacks.
+## Deployment
+
+Deploy this project as a standalone Vercel app using the repo root as the project root. Set `NEXT_PUBLIC_API_URL` to the deployed API server's HTTPS origin in the environment settings for the deployment.
 
 ## Project structure
 
 ```text
 src/
-  app/         App Router pages and shared UI components
-  lib/         API, authentication, and shared utilities
+  app/
+  components/
+  lib/
+  styles/
 ```
+
+The app uses the App Router, shared layout patterns, and route-driven pages for the public and private event workflows.
