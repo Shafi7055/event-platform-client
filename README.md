@@ -1,51 +1,73 @@
 # Goodneighbor — Social Development Events Platform
 
-Goodneighbor is a community service events client built with Next.js App Router. It helps neighbors discover local volunteer opportunities and provides a clear interface for organizers and participants.
+Goodneighbor is a community-service events platform that helps neighbors find local ways to volunteer, organize events, and keep track of the causes they care about. This repository contains the **Next.js client**; the API server is maintained separately.
 
-**Live site:** https://event-platform-client-nu.vercel.app
+**Live site:** [event-platform-client-nu.vercel.app](https://event-platform-client-nu.vercel.app)
 
-## What you can do
+## Features
 
-- Discover upcoming community events and filter by event type or location.
-- Explore event details and preview the join flow.
-- Create community events with a future date, category, location, and photo URL.
-- Review, edit, and remove events from the organizer dashboard.
-- See and manage events joined from your account.
-- Update a profile preview and switch between light and dark themes.
-- Browse a responsive gallery of community-service photography.
+- Discover future community events and search by title, location, or description; filter by event type.
+- View event details and join or leave events using your account.
+- Create events with a description, category, photo, location, and future date.
+- Manage events you created, including editing and deleting them.
+- Keep a date-sorted list of events you have joined.
+- Register or sign in with email and password, or continue with Google when the server's OAuth integration is configured.
+- Update your profile name and photo, and switch between light and dark themes.
+- Browse a community photo gallery and a newsletter sign-up section. Newsletter submission is currently a UI preview and does not subscribe an address to a mailing service.
+- Use the responsive interface on mobile, tablet, and desktop.
 
-## Client-only preview
+## Tech stack
 
-Event creation, joins, organizer edits, and profile edits are currently stored in the browser as a demonstration flow; they are not shared across users or devices. Authentication uses the configured API and Better Auth service.
+- Next.js App Router, React, and TypeScript
+- Better Auth for sign-in flows
+- `fetch`-based API client for event, profile, and account data
+- React Hook Form for event forms
 
 ## Getting started
 
+### Requirements
+
+- Node.js and npm
+- The separate event-platform API server, for features that require server-backed data or authentication
+
+### Install and run
+
 ```bash
 npm install
+cp .env.example .env.local
+```
+
+Set `NEXT_PUBLIC_API_URL` in `.env.local` to the origin of your API server. The default is `http://localhost:8000`.
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). The Next.js development server proxies `/api/*` requests to `NEXT_PUBLIC_API_URL`.
 
-## Connect the API
-
-Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_API_URL` to the origin of the Express API (default `http://localhost:8000`). Run the client on port `3000` and configure the backend CORS origin to `http://localhost:3000`.
-
-Email/password registration and login use the API and receive a signed JWT. The client sends it with protected API requests and keeps it in session storage for the current browser tab. The MongoDB URI and JWT signing secret are backend-only settings; never put them in `NEXT_PUBLIC_*` variables or this client repository.
-
-## Deploy to Vercel
-
-Deploy this Next.js client as its own Vercel project, with `event-platform-client` as the project root directory. Set `NEXT_PUBLIC_API_URL` to the HTTPS origin of the separately deployed API (without a trailing slash), then deploy or redeploy the client. The client proxies `/api/*` to that API, so endpoints such as `/api/events` are also available on the client origin. Configure the API project's `CORS_ORIGIN` with the exact deployed client origin. See the [API deployment instructions](https://github.com/Shafi7055/event-platform-server#deploy-to-vercel) for its Vercel project and required server-side environment variables.
-
-## Google sign-in
-
-The server uses Better Auth with Google OAuth and MongoDB. Configure `BETTER_AUTH_SECRET` with a random value of at least 32 characters, set `BETTER_AUTH_URL` to the client origin, and keep `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` on the server only. Auth requests are proxied through the client origin so the browser can retain the OAuth state cookie. Set the Google OAuth authorized redirect URI to `<BETTER_AUTH_URL>/api/auth/callback/google` (locally: `http://localhost:3000/api/auth/callback/google`). Set `CORS_ORIGIN` to the client origin.
-
-The client uses `NEXT_PUBLIC_API_URL` to reach the server. After Google verifies the user, the server exchanges the Better Auth session for the JWT format used by the existing protected API routes.
-
-## Validation
+## Available scripts
 
 ```bash
-npm run lint
-npm run build
+npm run dev    # Start the development server
+npm run lint   # Run ESLint
+npm run build  # Build the production application
+npm run start  # Start the production server (after building)
+```
+
+## API and authentication
+
+The client expects the separate server to provide the event and account API used by the app. This includes event browsing and details, event creation and management, event joins, current-user event lists, and profile updates. Protected requests use the signed-in user's bearer token. The client keeps its authentication session in browser `sessionStorage` for the current tab; event and profile data are handled by the API rather than shared through this client repository.
+
+Email/password sign-in and Google sign-in both depend on the server's authentication configuration. To use Google sign-in, configure the OAuth provider and callback settings on the API/auth service as well as setting `NEXT_PUBLIC_API_URL` to the API origin. Refer to the server's documentation for its required environment variables and deployment setup.
+
+## Deploying
+
+Deploy this repository as a separate Vercel project, using the repository root as the project root. Set `NEXT_PUBLIC_API_URL` to the deployed API server's HTTPS origin in the Vercel project environment, then deploy the client. The API/auth service must also be configured to accept the deployed client origin and its authentication callbacks.
+
+## Project structure
+
+```text
+src/
+  app/         App Router pages and shared UI components
+  lib/         API, authentication, and shared utilities
 ```
